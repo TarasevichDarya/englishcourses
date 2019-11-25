@@ -1,0 +1,256 @@
+﻿@using EnglishCourse.Model.ViewModels
+@model ThemeVM
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container" style="margin-top:10px; font-size:18px; ">
+    <h2>List of themes</h2>
+
+    <div id="errors" class="alert alert-danger" style="display:none;"></div>
+
+    <form name="themeForm">
+        <input type="hidden" name="ThemeId" value="0" />
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input class="form-control" name="Name" />
+        </div>
+        <div class="form-group">
+            <label for="Description">Description:</label>
+            @*<div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">With textarea</span>
+            </div>
+            <textarea class="form-control" aria-label="With textarea"></textarea>
+        </div>*@
+            <div class="input-group">
+                <textarea class="form-control" name="Description" rows="10" cols="160"></textarea>
+            </div>   
+            </div>
+            <div class="panel-body">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <a id="reset" class="btn btn-sm btn-primary">Reset</a>
+            </div>
+</form>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody id="ThemeTable"></tbody>
+        <tfoot>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    // Получение всех 
+    function GetThemes() {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTheme',
+            type: 'GET',
+            contentType: "application/json",
+            success: function (themes) {
+                var rows = "";
+                $.each(themes, function (index, theme) {
+                    // добавляем полученные элементы в таблицу
+                    rows += row(theme);
+                })
+                $("#ThemeTable").append(rows);
+            }
+        });
+    }
+
+    // Получение одного 
+    function GetTheme(id) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTheme/' + id,
+            type: 'GET',
+            contentType: "application/json",
+            success: function (theme) {
+                var form = document.forms["themeForm"];
+                form.elements["ThemeId"].value = theme.themeId;
+                form.elements["Name"].value = theme.name;
+                form.elements["Description"].value = theme.description;
+            }
+        });
+    }
+
+    // Удаление
+    function DeleteTheme(id) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTheme/' + id,
+            contentType: "application/json",
+            method: "DELETE",
+            success: function (theme) {
+                $("tr[data-rowid='" + theme.themeId + "']").remove();
+                alert('success');
+            }
+        })
+    }
+
+    // Добавление
+    function CreateTheme(themeName, themeDescription) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTheme/',
+            contentType: "application/json",
+            method: "POST",
+            data: JSON.stringify({
+                name: themeName,
+                description: themeDescription
+            }),
+            success: function (theme) {
+                reset();
+                $("table tbody").empty();
+                GetThemes();
+            },
+            error: function (jxqr, error, status) {
+                // парсинг json-объекта
+                console.log(jxqr);
+                if (jxqr.responseText === "") {
+                    $('#errors').append("<h3>" + jxqr.statusText + "</h3>");
+                }
+                else {
+                    var response = JSON.parse(jxqr.responseText);
+                    // добавляем общие ошибки модели
+                    if (response['']) {
+
+                        $.each(response[''], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства Name
+                    if (response['Name']) {
+
+                        $.each(response['Name'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства
+                    if (response['Description']) {
+                        $.each(response['Description'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                }
+
+                $('#errors').show();
+            }
+        })
+    }
+
+    // Изменение
+    function EditTheme(ThemeId, Name, Description) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTheme',
+            contentType: "application/json",
+            method: "PUT",
+            data: JSON.stringify({
+                themeId: ThemeId,
+                name: Name,
+                description: Description
+            }),
+            success: function (theme) {
+                reset();
+                $("tr[data-rowid='" + theme.themeId + "']").replaceWith(row(theme));
+                alert('success');
+            },
+            error: function (jxqr, error, status) {
+                $('#errors').empty();
+                // парсинг json-объекта
+                console.log(jxqr);
+                if (jxqr.responseText === "") {
+                    $('#errors').append("<h3>" + jxqr.statusText + "</h3>");
+                }
+                else {
+                    var response = JSON.parse(jxqr.responseText);
+                    // добавляем общие ошибки модели
+                    if (response['']) {
+
+                        $.each(response[''], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства Name
+                    if (response['Name']) {
+
+                        $.each(response['Name'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства Age
+                    if (response['Description']) {
+                        $.each(response['Description'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                }
+
+                $('#errors').show();
+            }
+        });
+    }
+
+    // создание строки theme
+    var row = function (theme) {
+
+        return "<tr data-rowid='" + theme.themeId + "'><td>" + theme.themeId + "</td>" +
+            "<td>" + theme.name + "</td> <td>" + theme.description + "</td>" +
+            "<td><a class='editLink' style='color:black' data-id='" + theme.themeId + "'>Изменить</a> | " +
+            "<a class='removeLink' style='color:black' data-id='" + theme.themeId + "'>Удалить</a></td></tr>";
+    }
+
+    // сброс значений формы
+    $("#reset").click(function (e) {
+        e.preventDefault();
+        $("form input").val('');
+    })
+
+    // сброс формы после изменения
+    function reset() {
+        var form = document.forms["themeForm"];
+        form.reset();
+        form.elements["ThemeId"].value = 0;
+    }
+
+    // нажимаем на ссылку Удалить
+    $("body").on("click", ".removeLink", function () {
+        var id = $(this).data("id");
+        DeleteTheme(id);
+    })
+
+    // нажимаем на ссылку Изменить
+    $("body").on("click", ".editLink", function () {
+        var id = $(this).data("id");
+        GetTheme(id);
+    })
+
+    // отправка формы
+    $("form").submit(function (e) {
+        $('#errors').empty().hide();
+        e.preventDefault();
+        var themeId = this.elements["ThemeId"].value;
+        var name = this.elements["Name"].value;
+        var description = this.elements["Description"].value;
+        if (themeId == 0)
+            CreateTheme(name, description);
+        else
+            EditTheme(themeId, name, description);
+    });
+
+    GetThemes();
+</script>
+
+

@@ -1,0 +1,63 @@
+﻿@model EnglishCourse.Model.ViewModels.HomeVM
+
+<div class="row" style="margin-top:5px">
+    <div style="margin-left:35%">
+        <h2><b>Административная часть</b></h2>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Theme Count
+            </div>
+            <div class="panel-body">
+                There are @Model.ThemeCount themes
+
+                <div class="btn-group">
+                    <a class="btn btn-info" asp-area="" asp-controller="Theme" asp-action="Index">List of themes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Test Count
+            </div>
+            <div class="panel-body">
+                There are @Model.TestCount tests
+
+                <div class="btn-group">
+                    <a class="btn btn-info" asp-area="" asp-controller="Test" asp-action="Index">List of tests</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Question count
+            </div>
+            <div class="panel-body">
+                There are @Model.QuestionCount questions
+
+                <div class="btn-group">
+                    <a class="btn btn-info" asp-area="" asp-controller="Question" asp-action="Index">List of questions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Answer count
+            </div>
+            <div class="panel-body">
+                There are @Model.AnswerCount answers
+
+                <div class="btn-group">
+                    <a class="btn btn-info" asp-area="" asp-controller="Answer" asp-action="Index">List of answers</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

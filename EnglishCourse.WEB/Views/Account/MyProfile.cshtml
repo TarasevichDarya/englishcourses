@@ -1,0 +1,105 @@
+﻿@using EnglishCourse.Model.ViewModels
+@model AccountVM
+@{
+    ViewData["Title"] = "MyProfile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@inject EnglishCourse.Logic.Interfaces.IResultService _resultService
+
+@{
+    var results = _resultService.GetAll().Where(x => x.AccountId == Model.AccountId);
+}
+
+<h2 style="margin-left:480px">My Profile</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div id="success" class="alert alert-success" style="display:none;"></div>
+
+        <form asp-action="MyProfile">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" name="AccountId" value="@Model.AccountId" />
+            <input type="hidden" name="Password" value="@Model.Password" />
+            <input type="hidden" name="Role" value="@Model.Role" />
+            <input type="hidden" name="Email" value="@Model.Email" />
+
+            <div class="form-group">
+                <h4>Email: @Model.Email</h4>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Surname" class="control-label"></label>
+                <input asp-for="Surname" class="form-control" />
+                <span asp-validation-for="Surname" class="text-danger"></span>
+            </div>
+            <div>
+                <label>Вы можете изменить информацию о себе: ввести новую и нажать кнопку Сохранить Save</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" id="btnSave" value="Сохранить Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+
+    <div class="modal fade" id="ModalSuccess">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                </div>
+                <div class="modal-body">
+                    Edit Success! Изменения успешно сохранены!
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<div class="row">
+    <div class="container">
+        <h2>Результаты тестов Results of tests</h2>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Тест Test</th>
+                    <th>Количество баллов TotalScore</th>
+                    <th>Дата и время начала DateStart</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(results != null)
+                {
+                    foreach(ResultVM r in results)
+                    {
+                        <tr>
+                            <td>@r.Test</td>
+                            <td>@r.TotalScore</td>
+                            <td>@r.TimeStart</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script>
+
+    $('#btnSave').on('click', function (e) {
+        $("#ModalSuccess").modal();
+    });
+    
+</script>
+

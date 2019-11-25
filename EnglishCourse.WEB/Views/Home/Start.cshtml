@@ -1,0 +1,98 @@
+﻿@using EnglishCourse.Model.ViewModels
+@model IEnumerable<QuestionVM>
+@{
+    ViewData["Title"] = "Start";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@inject EnglishCourse.Logic.Interfaces.ITestService _testService
+@inject EnglishCourse.Logic.Interfaces.IThemeService _themeService
+@inject EnglishCourse.Logic.Interfaces.IQuestionService _questionService
+
+@{
+    TestVM test = _testService.GetById(ViewBag.TestId);
+
+    ThemeVM theme = _themeService.GetById(test.ThemeId);
+}
+
+<h2 style="margin-left:450px">Начало Start</h2>
+<div class="row" style="margin-top:5px">
+    <input type="hidden" name="visit" id="visit" value="" />
+    <div style="margin-left:35%;margin-top:10px">
+        <h2>Тест: <b>@test.Name</b></h2>
+    </div>
+    <div>
+        <img src="~/images/25.png" alt="Coaches" class="img-responsive" height="100" width="100" style="margin:auto" />
+    </div>
+    <fieldset>
+        @foreach (var q in Model)
+        {
+            @Html.Partial("_QuestionPartial", q)
+        }
+    </fieldset>
+
+    <div class="modal fade" id="FinishTest">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4>Тест завершён, желаем удачи! Test is finished, we wish you good luck!</h4>
+                </div>
+                <div class="modal-body">
+                    <h2>Время начала теста: @ViewBag.DateStart</h2>
+                    <h2>Количество баллов: <span id="totalScore"></span></h2>
+                    
+                    <hr />
+                    <small>Все свои результаты Вы можете посмотреть в профиле, перейти?</small>
+                    <a href="/Account/MyProfile" class="btn btn-danger">Перейти Redirect</a>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-primary" data-dismiss="modal">Отмена Cancel</a>
+                    <a href="/Home/Tests/@theme.ThemeId" class="btn btn-success">Завершить Finish</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button type="button" id="btnFinish" name="button" class="btn btn-success">Завершить Finish</button>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    var array = [];
+
+    $('button').on('click', function (e) {
+        var array = [];
+
+        $("input").each(function (index, elem) {
+            if (elem.checked) {
+                array.push(elem.value);
+            }
+        });
+
+        console.log(array);
+
+        $.ajax({
+            url: 'https://localhost:44325/Home/Result/',
+            method: "POST",
+            data: {
+                values: array,
+                testId: @ViewBag.TestId
+            },
+            dataType: "json",
+            success: function (result) {
+                $("#totalScore").text(result);
+
+                
+
+                $("#FinishTest").modal();
+
+                $("#btnFinish").attr("disabled", true);
+            }
+        });
+    });
+</script>
+
+
+
+

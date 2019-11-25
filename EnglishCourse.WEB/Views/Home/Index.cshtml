@@ -1,0 +1,110 @@
+﻿@using EnglishCourse.Model.ViewModels
+@model HomeVM
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@inject EnglishCourse.Logic.Interfaces.IAccountService _accountService;
+
+@{
+    string role = _accountService.GetRole(User.Identity.Name);
+}
+
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000" style="height:200px">
+    <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+        <li data-target="#myCarousel" data-slide-to="2"></li>
+    </ol>
+    <div class="carousel-inner" role="listbox" style="height:200px">
+        <div class="item active" style="height:200px">
+            <img src="~/images/3.jpg" alt="Coaches" class="img-responsive"  />
+            <div class="carousel-caption" role="option">
+                <p>
+                    Найти репетиторов в Минске вы можете по ссылке
+                    <br />
+                    If you want to find coaches in Minsk, use this link
+                    <br />
+                    <a class="btn btn-default" href="https://minsk.repetitors.info/">
+                        Найти репетитора|Find coach
+                    </a>
+                </p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="~/images/2.jpg" alt="Tales" class="img-responsive" />
+            <div class="carousel-caption" role="option">
+                <p>
+                    Чтение сказок для разных уровней сложности
+                    <br />
+                    Reading tales for different levels of difficulty
+                    <br />
+                    <a class="btn btn-default" href="http://english-da.ru/skazki">
+                        Читать сказки|Read tales
+                    </a>
+                </p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="~/images/1.jpg" alt="Movies" class="img-responsive" />
+            <div class="carousel-caption" role="option">
+                <p>
+                    Смотреть фильмы на английском с субтитрами
+                    <br />
+                    Watch movies in English with en/rus subtitles
+                    <br />
+                    <a class="btn btn-default" href="http://lelang.ru/english/series/">
+                        Смотреть фильмы|Watch movies
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
+
+@if (role == "Admin")
+{
+    @Html.Partial("_AdminPart", Model)
+}
+else
+{
+    <div class="row" style="margin-top:5%">
+        <div class="container">
+            <div>
+                <form asp-controller="Home" asp-action="Index" method="get" style="margin-left:10px;margin-top:-50px;font-size:15px">
+                    <div style="width: 100%;">
+                        <label class="control-label" style="width:50%; float:left">Тип поиска Search type</label>
+                        <select name="searchType" class="form-control" style="width:50%; float:right">
+                            <option value="startWith">Начиная с|Start with</option>
+                            <option value="endWith">Заканчивая на|End with</option>
+                            <option value="equal">Полное совпадение|Equal</option>
+                            <option value="contains">Вхождение|Contains</option>
+                        </select>
+                        <label class="control-label" style="width:50%; float:left; margin-top:20px;font-size:15px">Поиск по названию Search by name</label>
+                        <input type="text" class="form-control" name="Name" placeholder="Search by name..." style="width:50%; float:right" />
+                        <input type="submit" class="btn btn-primary" value="Search" style="width:10%; float:right; margin-top:5px" />
+                        </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top:10px">
+            @foreach (ThemeVM theme in ViewBag.ThemeList)
+            {
+                @Html.Partial("_UserPart", theme)
+            }
+        </div>
+
+    </div>
+}
+
+

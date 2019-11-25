@@ -1,0 +1,76 @@
+﻿@model IEnumerable<EnglishCourse.Model.ViewModels.TestVM>
+
+@{
+    ViewData["Title"] = "Tests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@inject EnglishCourse.Logic.Interfaces.IQuestionService _questionService
+@inject EnglishCourse.Logic.Interfaces.IAnswerService _answerService
+@inject EnglishCourse.Logic.Interfaces.IResultService _resultService
+
+<h2 style="margin-left:350px">Список тестов List of Tests</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Theme)
+            </th>
+            <th>
+                Amount of test passed
+            </th>
+            <th>
+                Начать Start
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            // проверка на сформированный тест
+            {
+                int countQuestion = _questionService.GetAll().Where(x => x.TestId == item.TestId).Count();
+
+                var questions = _questionService.GetAll().Where(x => x.TestId == item.TestId).ToList();
+
+                var count = 0;
+
+                if (questions.Count() != 0)
+                {
+                    for (int i = 0; i < questions.Count; i++)
+                    {
+                        var countAnswerIsRight = _answerService.GetAll().Where(x => x.QuestionId == questions[i].QuestionId && x.IsRight).Count();
+
+                        var countAnswer = _answerService.GetAll().Where(x => x.QuestionId == questions[i].QuestionId).Count();
+
+                        if (countAnswerIsRight > 0 && countAnswer > 1)
+                        {
+                            count++;
+                        }
+                    }
+
+                    if (countQuestion == count) 
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Theme </td>
+                            <td>
+                                @{ 
+                                    int amount = _resultService.GetAll().Where(x => x.TestId == item.TestId).Count();
+                                }
+                                @amount
+                            </td>
+                            <td>
+                                <a class="btn btn-primary" href="/Home/Start/@item.TestId">Начать Start</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>

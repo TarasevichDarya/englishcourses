@@ -1,0 +1,242 @@
+﻿@using EnglishCourse.Model.ViewModels
+@model TestVM
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container" style="margin-top:10px; font-size:18px">
+    <h2>Список тестов List of tests</h2>
+
+    <div id="errors" class="alert alert-danger" style="display:none;"></div>
+
+    <form name="testForm">
+        <input type="hidden" name="TestId" value="0" />
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input class="form-control" name="Name" />
+        </div>
+        <div class="form-group">
+            <label for="Theme">Theme:</label>
+            @Html.DropDownListFor(model => model.ThemeId, new SelectList(ViewBag.ThemeList, "ThemeId", "Name"), "-- Select Theme --", new { @class = "form-control" })
+        </div>
+        <div class="panel-body">
+            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            <a id="reset" class="btn btn-sm btn-primary">Reset</a>
+        </div>
+    </form>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Theme</th>
+            </tr>
+        </thead>
+        <tbody id="TestTable"></tbody>
+        <tfoot>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Theme</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script>
+    // Получение всех тестов
+    function GetTests() {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTest',
+            type: 'GET',
+            contentType: "application/json",
+            success: function (tests) {
+                var rows = "";
+                $.each(tests, function (index, test) {
+                    // добавляем полученные элементы в таблицу
+                    rows += row(test);
+                });
+                $("#TestTable").append(rows);
+            }
+        });
+    }
+
+    // Изменение
+    function EditTest(TestId, Name, ThemeId) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTest',
+            contentType: "application/json",
+            method: "PUT",
+            data: JSON.stringify({
+                testId: TestId,
+                name: Name,
+                themeId: ThemeId
+            }),
+            success: function (test) {
+                reset();
+                $("tr[data-rowid='" + test.testId + "']").replaceWith(row(test));
+                alert('success');
+            },
+            error: function (jxqr, error, status) {
+                $('#errors').empty();
+                // парсинг json-объекта
+                console.log(jxqr);
+                if (jxqr.responseText === "") {
+                    $('#errors').append("<h3>" + jxqr.statusText + "</h3>");
+                }
+                else {
+                    var response = JSON.parse(jxqr.responseText);
+                    // добавляем ошибки свойства Name
+                    if (response['Name']) {
+                        $.each(response['Name'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства Age
+                    if (response['themeId']) {
+                        $('#errors').append("<p>The Theme field is required</p>");
+                    }
+                }
+
+                $('#errors').show();
+            }
+        });
+    }
+
+    // Добавление 
+    function CreateTest(testName, theme) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTest/',
+            contentType: "application/json",
+            method: "POST",
+            data: JSON.stringify({
+                name: testName,
+                themeId: theme
+            }),
+            success: function (test) {
+                reset();
+                $("#TestTable").empty();
+                GetTests();
+            },
+            error: function (jxqr, error, status) {
+                // парсинг json-объекта
+                console.log(jxqr);
+                if (jxqr.responseText === "") {
+                    $('#errors').append("<h3>" + jxqr.statusText + "</h3>");
+                }
+                else {
+                    var response = JSON.parse(jxqr.responseText);
+                    // добавляем общие ошибки модели
+                    if (response['']) {
+
+                        $.each(response[''], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства Name
+                    if (response['Name']) {
+
+                        $.each(response['Name'], function (index, item) {
+                            $('#errors').append("<p>" + item + "</p>");
+                        });
+                    }
+                    // добавляем ошибки свойства 
+                    if (response['themeId']) {
+                        $('#errors').append("<p>The Theme field is required</p>");
+                    }
+                }
+
+                $('#errors').show();
+            }
+        })
+    }
+
+    // Удаление 
+    function DeleteTest(id) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTest/' + id,
+            contentType: "application/json",
+            method: "DELETE",
+            success: function (test) {
+                $("tr[data-rowid='" + test.testId + "']").remove();
+                alert('success');
+            }
+        })
+    }
+
+    // Получение одного 
+    function GetTest(id) {
+        $.ajax({
+            url: 'https://localhost:44325/api/ApiTest/' + id,
+            type: 'GET',
+            contentType: "application/json",
+            success: function (test) {
+                var form = document.forms["testForm"];
+                form.elements["TestId"].value = test.testId;
+                form.elements["Name"].value = test.name;
+                form.elements["ThemeId"].value = test.themeId;
+            }
+        });
+    }
+
+    // создание строки theme
+    var row = function (test) {
+        return "<tr data-rowid='" + test.testId + "'><td>" + test.testId + "</td>" +
+            "<td>" + test.name + "</td> <td>" + test.theme + "</td>" +
+            "<td><a class='editLink' data-id='" + test.testId + "'>Изменить</a> | " +
+            "<a class='removeLink' data-id='" + test.testId + "'>Удалить</a></td></tr>";
+    }
+
+    // сброс значений формы
+    $("#reset").click(function (e) {
+        e.preventDefault();
+        $("form input").val('');
+        $("#ThemeId").val('');
+    })
+
+    // сброс формы после изменения
+    function reset() {
+        var form = document.forms["testForm"];
+        form.reset();
+        form.elements["TestId"].value = 0;
+    }
+
+    // нажимаем на ссылку Удалить
+    $("body").on("click", ".removeLink", function () {
+        var id = $(this).data("id");
+        DeleteTest(id);
+    })
+
+    // нажимаем на ссылку Изменить
+    $("body").on("click", ".editLink", function () {
+        var id = $(this).data("id");
+        GetTest(id);
+    })
+
+    // отправка формы
+    $("form").submit(function (e) {
+        $('#errors').empty().hide();
+        e.preventDefault();
+        var testId = this.elements["TestId"].value;
+        var name = this.elements["Name"].value;
+        var themeId = this.elements["ThemeId"].value;
+        if (testId == 0)
+            CreateTest(name, themeId);
+        else
+            EditTest(testId, name, themeId);
+    });
+
+    GetTests();
+</script>
+
+
+
+
+
+
